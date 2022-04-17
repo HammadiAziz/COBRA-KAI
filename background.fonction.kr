@@ -1,0 +1,400 @@
+/**
+* @file background.c
+* @brief tache background.
+* @author kraiem
+* @version 0.1
+* @date Apr 12, 2022
+*/
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
+#include "kraiemm.h"
+#define SCREEN_W 900
+#define SCREEN_H 900
+
+
+/**
+* @brief To initialize the background b
+* @param b the background
+* @return Nothing
+*/
+void init_Back(background * b)
+{
+
+b->backgroundImg = IMG_Load ("b.png");
+if (b->backgroundImg == NULL)
+{
+printf ("unable to load bitmap: %s\n", SDL_GetError ());
+
+}
+b->backgroundPos.x=0;
+b->backgroundPos.y=0 ;
+b->backgroundPos.w=SCREEN_W/2;  
+b->backgroundPos.h=SCREEN_H;
+
+}
+
+
+/**
+* @brief To show the background b
+* @param b the background
+* @param screen the screen
+* @return Nothing
+*/
+void afficher_Back(background b, SDL_Surface * screen)
+{
+SDL_BlitSurface(b.backgroundImg, &(b.backgroundPos), screen,NULL);
+}
+
+
+/**
+* @brief To initialize the second background b
+* @param b the background
+* @return Nothing
+*/
+void init_Back_pe(background * b)
+{
+    //partage d'ecran
+
+
+b->posEcran2.x=SCREEN_W/2 + 2;
+b->posEcran2.y=0;
+b->posEcran2.w=SCREEN_W/2;
+b->posEcran2.h=SCREEN_H;
+}
+
+
+/**
+* @brief To show the second background b
+* @param b the background
+* @param screen the screen
+* @return Nothing
+*/
+void afficher_Back_pe(background b, SDL_Surface * screen)
+{
+    //partage d'ecran
+ if(b.posEcran2.x > b.backgroundImg->w-SCREEN_W)
+                    b.posEcran2.x=(SCREEN_W/2)+2;
+                   else if(b.posEcran2.x < SCREEN_W/2)
+b.posEcran2.x=(SCREEN_W/2)+2;
+    SDL_BlitSurface(b.backgroundImg, NULL,screen,&(b.posEcran2));
+
+}
+
+
+void partage_d_ecran(background * b, SDL_Surface * screen)
+{
+    int keysHeld[323]={0};
+
+    init_Back_pe(b);
+    afficher_Back_pe(*b,screen);
+}
+void generate_Clips(SDL_Rect Clips[5], int frames, int frameWidth, int clipWidth, int clipHeight)
+{
+    int i, w;
+    for (w = 0, i = 0; i < frames; i++, w += frameWidth)
+    {
+        Clips[i].x = w;
+        Clips[i].y = 0;
+        Clips[i].w = clipWidth;
+        Clips[i].h = clipHeight;
+    }
+}
+
+
+void initCoin( kraiem *c)
+{
+    c->pos.x = 200;
+    c->pos.y = 50;
+    c->pos.w =128 ;
+    c->pos.h = 173;  //hauter
+
+
+
+    c->animation.spriteSheet = IMG_Load("rererez.png");
+    c->animation.frames = 5;  // number de photo fil sprite
+
+
+    c->animation.clipLoaded = 0; //il mich i9dim fil function anime
+
+
+
+    generate_Clips(c->animation.Clips, c->animation.frames,128,128,173);  //191 laugeur et 171 largeur
+}
+
+void afficherCoin( kraiem c, SDL_Surface *screen)
+{
+    SDL_BlitSurface(c.animation.spriteSheet, &c.animation.Clips[c.animation.clipLoaded], screen, &c.pos);
+}///////////////////////////////////
+
+void animerCoin( kraiem  *c)
+{
+    SDL_Delay(50);
+    c->animation.clipLoaded++; //il image i9dim
+    if (c->animation.clipLoaded >= c->animation.frames) //when it reaches the final picture of spritesheet
+        c->animation.clipLoaded = 0;
+ //revenir au debut
+}
+
+/**
+* @brief To scroll the background
+* @param b the background
+* @param direction the direction of scrolling
+* @param numBACK the number of background to scroll
+* @return Nothing
+*/
+void scrolling (background * b,int direction,int numBACK)
+{
+    switch(numBACK)
+    {
+        case 1:
+        {
+            switch(direction)
+            {
+                case 1 :
+                b->backgroundPos.x--;break;
+                case 2 :
+                b->backgroundPos.x++;break;
+                case 3 :
+                b->backgroundPos.y--;break;
+                case 4 :
+                b->backgroundPos.y++;break;
+            }
+                    if(b->backgroundPos.x > b->backgroundImg->w-SCREEN_W)
+                    b->backgroundPos.x=0;
+                    if(b->backgroundPos.x<0)
+                    b->backgroundPos.x=0;
+        }break;
+        case 2:
+        {
+            switch(direction)
+            {
+                case 5 :
+                b->posEcran2.x--;break;
+                case 6 :
+                b->posEcran2.x++;break;
+                case 7 :
+                b->posEcran2.y--;break;
+                case 8 :
+                b->posEcran2.y++;break;
+            }
+                   if(b->posEcran2.x > b->backgroundImg->w-SCREEN_W)
+                    b->posEcran2.x=(SCREEN_W/2)+2;
+                    if(b->posEcran2.x < SCREEN_W/2)
+b->posEcran2.x=(SCREEN_W/2)+2;
+        }break;
+    }
+
+}
+//collision
+int collisionPP(Personne p, SDL_Surface *Masque)
+{  
+ int X,Y,W,H  ;
+background * b;
+
+
+//Chargement des arrières plans
+b->backgroundImg = IMG_Load ("b.png");
+Masque =IMG_Load ("rererez..png");
+//insaliser la postion de personage
+     X= p.posPerso.x=0;
+    Y=  p.posPerso.y =0;
+    W =   p.posPerso.w = 10 ;
+    H =  p.posPerso.h = 10 ;
+
+    SDL_Color GetPixel (SDL_Surface *psurface,int x,int y )
+    {
+        SDL_Color color ;
+         Uint32 col =0;
+        char *pPosition=(char*) psurface->pixels;
+        pPosition+=(psurface->pitch*y);
+        pPosition+=(psurface->format-> BytesPerPixel);
+memcpy(&col,pPosition,psurface->format->BytesPerPixel);
+        SDL_GetRGB (col,psurface->format,&color.r,&color.g,&color.b);
+        return(color);
+    }
+ if(p.direction=2)//right
+{
+
+SDL_Color col,colobs ;
+//insaliser la couleuer
+colobs.r=0;
+ colobs.b=0;
+colobs.g=0;
+/*int w=p->posPerso.w;
+int h=p->posPerso.h ;*/
+  SDL_Rect pos[8] ;
+ int collision = 0,i;
+
+pos[1].x=X;
+pos[1].y=Y ;
+pos[2].x=X+W/2;
+pos[2].y=Y ;
+ for(i=0; i<3&&collision==0; i++)
+        {
+            col=GetPixel(Masque,pos[i].x,pos[i].y);
+            if((col.r==colobs.r)&&(col.b==colobs.b)&&(col.g==colobs.g))
+                collision=1;
+           
+        }
+ }
+
+ if (p.direction=1)//left
+
+    {
+SDL_Color col,colobs ;
+//insaliser la couleuer
+colobs.r=0;
+ colobs.b=0;
+colobs.g=0;
+/*int w=p->posPerso.w;
+int h=p->posPerso.h ;*/
+  SDL_Rect pos[8] ;
+ int collision = 0,i;
+ pos[4].x=X;
+        pos[4].y=Y+H/2;
+ pos[5].x=X;
+        pos[5].y=Y+H;
+
+ pos[6].x=X+W/2;
+        pos[6].y=Y+H;
+
+for(i=4; i<7&&collision==0; i++)
+        {
+            col=GetPixel(Masque,pos[i].x,pos[i].y);
+            if((col.r==colobs.r)&&(col.b==colobs.b)&&(col.g==colobs.g))
+                collision=1;
+           
+        }
+}
+
+if (p.direction=4)//down
+    {
+ SDL_Color col,colobs ;
+        SDL_Rect pos[8] ;
+        int collision = 0,i;
+       /* int w=p->posPerso.w;
+        int h=p->posPerso.h ;*/
+        colobs.r=0;
+        colobs.b=0;
+        colobs.g=0;
+
+        pos[2].x=X+W/2;
+        pos[2].y=Y;
+        pos[3].x=X+W;
+        pos[3].y=Y;
+        pos[4].x=X;
+        pos[4].y=Y+H;
+
+        for(i=2; i<5&&collision==0; i++)
+        {
+            col=GetPixel(Masque,pos[i].x,pos[i].y);
+            if((col.r==colobs.r)&&(col.b==colobs.b)&&(col.g==colobs.g))
+                collision=1;
+           
+        }
+
+}
+
+
+ if(p.direction=3)
+    {
+        SDL_Color col,colobs ;
+        SDL_Rect pos[8] ;
+        int collision = 0,i;
+        /*int w=p->posPerso.w;
+        int h=p->posPerso.h ;*/
+        colobs.r=0;
+        colobs.b=0;
+        colobs.g=0;
+
+       pos[6].x=X+W/2;
+        pos[6].y=Y+H;
+        pos[7].x=X+W/2;
+        pos[7].y=Y+H;
+        pos[8].x=X+W;
+        pos[8].y=Y+H/2 ;
+
+        for(i=6; i<9&&collision==0; i++)
+        {
+            col=GetPixel(Masque,pos[i].x,pos[i].y);
+            if((col.r==colobs.r)&&(col.b==colobs.b)&&(col.g==colobs.g))
+                collision=1;
+           
+             
+        }
+
+ return (collision);
+}
+
+/*void initCoin1( kraiem *c1)
+{
+    c1->pos.x = 200;
+    c1->pos.y = 30;
+    c1->pos.w = 97;
+    c1->pos.h = 453;  //hauter
+
+
+
+    c1->animation.spriteSheet = IMG_Load("az.png");
+    c1->animation.frames = 7;  // number de photo fil sprite
+
+
+    c1->animation.clipLoaded = 0; //il mich i9dim fil function anime
+
+
+
+    generate_Clips(c1->animation.Clips, c1->animation.frames,97,97,453);  //191 laugeur et 171 largeur
+}
+
+void afficherCoin1( kraiem c1, SDL_Surface *screen)
+{
+    SDL_BlitSurface(c1.animation.spriteSheet, &c1.animation.Clips[c1.animation.clipLoaded], screen, &c1.pos);
+}
+
+void animerCoin1( kraiem  *c1)
+{
+    SDL_Delay(50);
+    c1->animation.clipLoaded++; //il image i9dim
+    if (c1->animation.clipLoaded >= c1->animation.frames) //when it reaches the final picture of spritesheet
+        c1->animation.clipLoaded = 0; //revenir au debut
+}*/
+
+void initCoin1( kraiem1 *c1)
+{
+    c1->pos.x = 200;
+    c1->pos.y = 50;
+    c1->pos.w =97;
+    c1->pos.h = 453;  //hauter
+
+
+
+    c1->animation.spriteSheet = IMG_Load("az.png");
+    c1->animation.frames = 7;  // number de photo fil sprite
+
+
+    c1->animation.clipLoaded = 0; //il mich i9dim fil function anime
+
+
+
+    generate_Clips(c1->animation.Clips, c1->animation.frames,97,97,453);  //191 laugeur et 171 largeur
+}
+
+void afficherCoin1( kraiem1 c1, SDL_Surface *screen)
+{
+    SDL_BlitSurface(c1.animation.spriteSheet, &c1.animation.Clips[c1.animation.clipLoaded], screen, &c1.pos);
+}///////////////////////////////////
+
+void animerCoin1( kraiem1  *c1)
+{
+    SDL_Delay(50);
+    c1->animation.clipLoaded++; //il image i9dim
+    if (c1->animation.clipLoaded >= c1->animation.frames) //when it reaches the final picture of spritesheet
+        c1->animation.clipLoaded = 0;
+ //revenir au debut
+}
+
+}
+
