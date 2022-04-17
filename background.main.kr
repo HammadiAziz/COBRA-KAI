@@ -1,0 +1,130 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
+#include "kraiemm.h"
+#include <SDL/SDL_mixer.h>
+
+
+
+
+
+
+int main (int argc, char *argv[])
+{
+int input;
+int direction=1;
+background b;
+SDL_Event event;
+SDL_Surface *SCREEN=NULL ;
+int continuer = 1;
+kraiem c;
+kraiem1 c1;
+Personne p;
+int x;
+SDL_Init(SDL_INIT_VIDEO);
+if (SDL_Init (SDL_INIT_VIDEO) == -1)
+{
+printf ("Can't init SDL: %s\n", SDL_GetError ());
+
+
+return EXIT_FAILURE;
+}
+
+
+SCREEN = SDL_SetVideoMode (SCREEN_W,SCREEN_H,32,SDL_HWSURFACE|SDL_DOUBLEBUF);
+
+initCoin(&c);
+initCoin1(&c1);
+ init_Back(&b);
+init_Back_pe(&b);
+
+ //SDL_Delay(10000);
+if (Mix_OpenAudio(44100,MIX_DEFAULT_FORMAT,MIX_DEFAULT_CHANNELS,1024) == -1 )
+{
+printf ("%s \n ",Mix_GetError() );
+}
+
+Mix_Music *music;
+music =Mix_LoadMUS("Michael_1.mp3");
+Mix_PlayMusic(music,-1);
+
+
+
+ SDL_EnableKeyRepeat (SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
+
+while (continuer)
+{
+afficher_Back(b,SCREEN);
+afficherCoin(c,SCREEN);
+afficherCoin1(c1,SCREEN);
+
+animerCoin(&c);
+animerCoin1(&c1);
+
+afficher_Back_pe(b, SCREEN);
+ SDL_Flip (SCREEN);
+ SDL_PollEvent (&event);
+
+switch (event.type)
+{
+case SDL_QUIT:
+continuer = 0;break;
+case SDL_KEYDOWN:
+switch(event.key.keysym.sym)
+{
+case SDLK_LEFT:
+input=1;
+break;
+case SDLK_RIGHT:
+input=2;
+break;
+case SDLK_UP:
+input=3;
+break;
+case SDLK_DOWN:
+input=4;
+break;
+
+case SDLK_d:
+input=5;
+break;
+case SDLK_q:
+input=6;
+break;
+case SDLK_z:
+input=7;
+break;
+case SDLK_s:
+input=8;
+break;
+}
+if (input==1)
+{scrolling (&b,1,1);}
+if(input==2)
+{scrolling (&b,2,1);}
+if(input==3)
+{scrolling (&b,3,1);}
+if(input==4)
+{scrolling (&b,4,1);}
+
+if (input==5)
+{scrolling (&b,1,2);}
+if(input==6)
+{scrolling (&b,6,2);}
+if(input==7)
+{scrolling (&b,7,2);}
+if(input==8)
+{scrolling (&b,8,2);}
+
+break;
+}
+
+SDL_Delay(0.000001);
+
+}
+
+SDL_FreeSurface(b.backgroundImg);
+SDL_FreeSurface(SCREEN);
+}
+
